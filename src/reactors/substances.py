@@ -41,7 +41,7 @@ class Solvent(Enum):
 
 @dataclass(frozen=True)
 class SolidsProps:
-    thermal_conductivity: float
+    thermal_conductivity: float  # W/(m^2*K)
 
 class Solid(Enum):
     stainlesssteel = SolidsProps(15)

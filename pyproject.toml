@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tubular_reactor"
+version = "0.1.0"
+authors = [{name = "Clemens Gaa", email = "caeglx@protonmail.com"}]
+description = "Library for tubular experiements and their evaluation"
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [ # list of classifiers: https://pypi.org/classifiers/
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Pytohn :: 3",
+  "Programming Language :: Pytohn :: 3.10",
+  "Programming Language :: Pytohn :: 3.11",
+  "Programming Language :: Pytohn :: 3.12",
+  "Programming Language :: Pytohn :: 3.13",
+  "Topic :: Scientific/Engineering :: Chemistry",
+]
+keywords = ["tubular reactor"]
+# requires_python = ">=3.10"
+dependencies = [
+  "numpy >= 1.22.3"
+]
+[project.urls]
+Code = "https://github.com/caeglx/tubular_reactor"

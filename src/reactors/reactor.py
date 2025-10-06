@@ -1,7 +1,7 @@
-from math import pi as PI, exp, log, sqrt
+from math import pi as PI, log, sqrt
 from typing import Final
 import numpy as np
-from substances import Solvent, Solid
+from .substances import Solvent, Solid
 
 SEC_PER_MIN: Final[int] = 60  # s/min
 ML_PER_M3: Final[float] = 1e6  # ml/m^3
@@ -14,6 +14,7 @@ reactor_outer_diameter: dict[str, float] = {
     "1/16": INCH_TO_METER * 1 / 16,
 }
 
+#NOTE: Values for twisting Bodenstein number calculation
 dean_values: list[int] = [10, 20, 30, 40, 50]
 y_axis_values: list[float] = [11, 10.5, 10, 9, 8]
 
@@ -44,7 +45,7 @@ class Reactor:
 
         Parameters:
             flow_rate_mlmin (float): Total flow rate for reactor in ml/min
-            solvent (Solvent): Possible solvents with their material properties from the substances.py file
+            solvent (Solvent): Possible solvents like 'Solvent.ethanol' with their material properties from the substances.py file
             twisting_radius(mm): Optional, radius of twisting when working with a twisted reactor based on Erdgogan & Chatwin 1967
         """
 
@@ -64,6 +65,7 @@ class Reactor:
             twisting_radius: float = twisting_radius_mm / 1000
             dean_number: float = self.reynolds_number * sqrt(self.inner_diameter / (2 * twisting_radius))
             y_axis_value: float = np.interp(dean_number, dean_values, y_axis_values)
+            #TODO: Add warning if twisted axial diffusion is not interpolated but extrapolated
             self.diffusion_axial_twisted: float = self.diffusion_axial / ((1 / 192 * 10000) / y_axis_value)
             self.bodenstein_number_twisted: float = self.velocity * self.length / self.diffusion_axial_twisted
             print(f"Bodenstein number of twisted reactor is {self.bodenstein_number_twisted:.1f}.")
@@ -77,7 +79,7 @@ class Reactor:
             n_residence_times (float): Default 3, number of residence times to calculate
         """
 
-        # Use diffusion of twisted reactor if that was previous calculated
+        # Use diffusion of twisted reactor if that has been previous calculated
         try:
             self.diffusion_axial_twisted
             diffusion_axial = self.diffusion_axial_twisted
@@ -115,8 +117,9 @@ class Reactor:
         print(f"{percent_steady} % of stationary achieved after {tau_steady:.1f} residence times or {t_steady:.1f} s.")
 
 
-    def preheating(self, flow_rate_mlmin: float, initial_temperature_degC: float, cooling_temperature_degC: float,
-                   outlet_temperature_degC: float, solvent: Solvent, solid: Solid) -> None:
+    #NOTE: Specify the temperature at the outlet or the remaining temperature difference for wich the length is getting calculated?
+    def preheating(self, flow_rate_mlmin: float, initial_temperature_degC: float, outlet_temperature_degC: float,
+                   cooling_temperature_degC: float, solvent: Solvent, solid: Solid) -> None:
         """
         Calculate tube length to reach outlet temperature.
 
@@ -124,8 +127,8 @@ class Reactor:
             flow_rate_mlmin (float): Volume flow rate in ml/min.
             initial_temperature_degC (float): Initial temperature in degree Celsius.
             cooling_temperature_degC (float): Cooling temperature in degree Celsius.
-            solvent (Solvent): Possible solvents with their material properties from the substances.py file
-            solid (Solid): Possible solvents with their paterial properties from the substances.py file
+            solvent (Solvent): Possible solvents like'Solvent.ethanol' with their material properties from the substances.py file
+            solid (Solid): Possible solvents like 'Solid.ptfe' with their paterial properties from the substances.py file
         """
 
         flow_rate: float = flow_rate_mlmin / (SEC_PER_MIN * ML_PER_M3)
@@ -149,17 +152,7 @@ class Reactor:
             * -(mass_flow_rate * cp) / (heat_transfer_coefficient * PI * self.inner_diameter)
         print(f"{length_outlet_temperature:.2f} m are needed to reach {outlet_temperature_degC} °C at the outlet.")
         self.length = length_outlet_temperature
-        # NOTE: other idea to calculate temperature based on length
+        # NOTE: other idea is to calculate temperature based on length
         # outlet_temperature_degC = cooling_temperature_degC + (initial_temperature_degC - cooling_temperature_degC) * exp(-U * self.area / (mass_flow_rate * cp))
         # print(f"Temperature at the outlet is {outlet_temperature_degC:.2f} °C.")
-
-
-if __name__ == "__main__":
-    reac = Reactor(inner_diameter_mm=0.5, outer_diameter_inch=1/16, length=4)
-    reac.bodenstein(flow_rate_mlmin=1.0, solvent=Solvent.thf, twisting_radius_mm=7)
-    reac.time_to_stationary(percent_steady=99)
-
-    preheat = Reactor(1.0, 1/16)
-    preheat.preheating(flow_rate_mlmin=5, initial_temperature_degC=20, cooling_temperature_degC=-20,
-                       outlet_temperature_degC=-19.5, solvent=Solvent.thf, solid=Solid.pfa)
 
