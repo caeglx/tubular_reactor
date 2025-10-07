@@ -20,7 +20,7 @@ python --version
 For beginners, the use of Visual Studio Code is recommended since it allows an easy and well documented workflow with Python scripts and Jupyter Notebooks and can also get installed with WinGet.
 
 ```bash
-winget inþall -e --id Microsoft.VisdualStudioCode
+winget insall -e --id Microsoft.VisdualStudioCode
 ```
 
 ### Create virtual environment
